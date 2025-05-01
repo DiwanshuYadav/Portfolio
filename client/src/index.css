@@ -183,6 +183,16 @@
   animation: float 6s ease-in-out infinite;
 }
 
+/* Fade in animation */
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
 /* Glitch animation */
 @keyframes glitch {
   0%, 100% { transform: translate(0); }
@@ -297,6 +307,66 @@
 .reduced-motion, .reduced-motion * {
   transition: none !important;
   animation: none !important;
+}
+
+/* Shadow glow effects */
+.hover\:shadow-glow-teal:hover {
+  box-shadow: 0 0 15px 5px rgba(0, 255, 194, 0.3);
+}
+
+.hover\:shadow-glow-magenta:hover {
+  box-shadow: 0 0 15px 5px rgba(255, 0, 170, 0.3);
+}
+
+.hover\:shadow-glow-blue:hover {
+  box-shadow: 0 0 15px 5px rgba(0, 170, 255, 0.3);
+}
+
+/* Gradient backgrounds */
+.bg-gradient-radial {
+  background-image: radial-gradient(var(--tw-gradient-stops));
+}
+
+/* Keyboard shortcut styles */
+.key-combo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.kbd {
+  display: inline-block;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.75rem;
+  font-family: 'Space Grotesk', monospace;
+  background-color: hsl(0, 0%, 12%);
+  border: 1px solid hsl(0, 0%, 20%);
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 0 hsl(0, 0%, 15%);
+}
+
+/* Parallax scrolling effect */
+.parallax {
+  perspective: 1px;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.parallax-layer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.parallax-layer-back {
+  transform: translateZ(-1px) scale(2);
+}
+
+.parallax-layer-base {
+  transform: translateZ(0);
 }
 
 /* Scrollbar styling */

@@ -43,28 +43,40 @@ const volumeLevels: Record<SoundEffect, number> = {
 };
 
 export function useAudio() {
-  const [isEnabled, setIsEnabled] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  // Use refs to avoid dependency cycles in useEffect/useCallback
+  const isEnabledRef = useRef(false);
+  const isLoadedRef = useRef(false);
+  const [isEnabled, setIsEnabled] = useState(false); // Keep this state for UI updates
   const audioElements = useRef<Record<SoundEffect, HTMLAudioElement | null>>({} as Record<SoundEffect, HTMLAudioElement | null>);
-  
-  // Load audio elements when hook is initialized
+
+  // Initialize audio elements only once when hook is mounted
   useEffect(() => {
+    // Check if already initialized
+    if (isLoadedRef.current) return;
+    
+    console.log('Initializing audio system...');
+    
+    // Load saved audio state first
+    const savedAudioState = localStorage.getItem('audioEnabled');
+    const initialState = savedAudioState === 'true';
+    isEnabledRef.current = initialState;
+    setIsEnabled(initialState);
+    
     // Create audio elements for each sound effect
     Object.entries(soundEffects).forEach(([key, src]) => {
-      const audio = new Audio(src);
-      audio.volume = volumeLevels[key as SoundEffect];
-      audio.preload = 'auto';
-      
-      audioElements.current[key as SoundEffect] = audio;
+      try {
+        const audio = new Audio(src);
+        audio.volume = volumeLevels[key as SoundEffect];
+        audio.preload = 'auto';
+        
+        audioElements.current[key as SoundEffect] = audio;
+      } catch (err) {
+        console.error(`Failed to load audio for ${key}:`, err);
+      }
     });
     
-    setIsLoaded(true);
-    
-    // Check if audio was previously enabled
-    const savedAudioState = localStorage.getItem('audioEnabled');
-    if (savedAudioState) {
-      setIsEnabled(savedAudioState === 'true');
-    }
+    // Mark as loaded
+    isLoadedRef.current = true;
     
     // Clean up audio elements
     return () => {
@@ -74,28 +86,39 @@ export function useAudio() {
           audio.src = '';
         }
       });
+      isLoadedRef.current = false;
     };
-  }, []);
+  }, []); // Empty dependency array - only run once on mount
   
-  // Toggle audio on/off
+  // Toggle audio on/off without dependencies
   const toggleAudio = useCallback(() => {
-    const newState = !isEnabled;
+    const newState = !isEnabledRef.current;
+    
+    // Update ref first
+    isEnabledRef.current = newState;
+    
+    // Then update state for UI
     setIsEnabled(newState);
+    
+    // Save preference
     localStorage.setItem('audioEnabled', newState.toString());
     
+    console.log('Audio toggled:', newState ? 'ON' : 'OFF');
+    
     // Play the toggle sound
-    if (newState) {
+    if (newState && isLoadedRef.current) {
       const audio = audioElements.current['toggle-on'];
       if (audio) {
         audio.currentTime = 0;
         audio.play().catch(e => console.error('Error playing audio:', e));
       }
     }
-  }, [isEnabled]);
+  }, []); // No dependencies
   
-  // Play sound effect
+  // Play sound effect without dependencies on state
   const playSound = useCallback((effect: SoundEffect) => {
-    if (!isEnabled || !isLoaded) return;
+    // Check the ref values, not the state
+    if (!isEnabledRef.current || !isLoadedRef.current) return;
     
     const audio = audioElements.current[effect];
     if (audio) {
@@ -103,7 +126,7 @@ export function useAudio() {
       audio.currentTime = 0;
       audio.play().catch(e => console.error('Error playing audio:', e));
     }
-  }, [isEnabled, isLoaded]);
+  }, []); // No dependencies
   
   return { isEnabled, toggleAudio, playSound };
 }

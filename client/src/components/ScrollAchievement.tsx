@@ -1,10 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-
-interface Achievement {
-  id: string;
-  name: string;
-}
+import { Achievement } from '@/hooks/use-achievements';
 
 interface ScrollAchievementProps {
   achievement: Achievement;

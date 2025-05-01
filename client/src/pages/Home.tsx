@@ -221,7 +221,8 @@ const Home = () => {
           
           <AudioToggle 
             isEnabled={audioEnabled} 
-            onToggle={toggleAudio} 
+            onToggle={toggleAudio}
+            playSound={playSound}
           />
           
           <AccessibilityControls />

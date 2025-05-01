@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
-interface Achievement {
+export interface Achievement {
   id: string;
   name: string;
 }
@@ -29,27 +29,49 @@ const achievements: Record<string, Achievement> = {
 };
 
 export function useAchievements() {
+  // Use refs for internal state to avoid dependency cycles
+  const unlockedRef = useRef<Record<string, boolean>>({});
   const [unlockedAchievements, setUnlockedAchievements] = useState<Record<string, boolean>>({});
   const [currentAchievement, setCurrentAchievement] = useState<Achievement | null>(null);
   
+  // Notification timer reference to clear on unmount
+  const timerRef = useRef<number | null>(null);
+  
   const triggerAchievement = useCallback((achievementId: string) => {
-    // Check if achievement exists and has not been unlocked yet
-    if (achievements[achievementId] && !unlockedAchievements[achievementId]) {
-      // Mark achievement as unlocked
-      setUnlockedAchievements(prev => ({
-        ...prev,
-        [achievementId]: true
-      }));
-      
-      // Show achievement notification
-      setCurrentAchievement(achievements[achievementId]);
-      
-      // Clear achievement notification after 3 seconds
-      setTimeout(() => {
-        setCurrentAchievement(null);
-      }, 3000);
+    // Only process if this is a valid achievement
+    if (!achievements[achievementId]) return;
+    
+    // Check if achievement has already been unlocked
+    if (unlockedRef.current[achievementId]) return;
+    
+    console.log(`Unlocking achievement: ${achievementId}`);
+    
+    // Mark as unlocked in ref (for internal checks)
+    unlockedRef.current = {
+      ...unlockedRef.current,
+      [achievementId]: true
+    };
+    
+    // Update state for UI
+    setUnlockedAchievements(prev => ({
+      ...prev,
+      [achievementId]: true
+    }));
+    
+    // Show achievement notification
+    setCurrentAchievement(achievements[achievementId]);
+    
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
     }
-  }, [unlockedAchievements]);
+    
+    // Clear achievement notification after 3 seconds
+    timerRef.current = window.setTimeout(() => {
+      setCurrentAchievement(null);
+      timerRef.current = null;
+    }, 3000);
+  }, []); // No dependencies needed
   
   return { 
     currentAchievement, 

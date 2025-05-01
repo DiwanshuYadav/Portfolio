@@ -1,13 +1,35 @@
+import { useAudio } from '@/hooks/use-audio';
+import { useState, useEffect } from 'react';
+
 interface AudioToggleProps {
   isEnabled: boolean;
   onToggle: () => void;
 }
 
 const AudioToggle: React.FC<AudioToggleProps> = ({ isEnabled, onToggle }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const { playSound } = useAudio();
+  
+  // Play sound on button click
+  const handleToggle = () => {
+    // Play appropriate sound (before state changes)
+    playSound(isEnabled ? 'toggle-off' : 'toggle-on');
+    onToggle();
+  };
+  
+  // Play hover sound
+  useEffect(() => {
+    if (isHovered) {
+      playSound('hover');
+    }
+  }, [isHovered, playSound]);
+  
   return (
     <button 
-      className="fixed bottom-5 left-5 z-30 w-12 h-12 rounded-full bg-dark-charcoal border border-neon-teal flex items-center justify-center shadow-lg hover:bg-light-charcoal transition-colors"
-      onClick={onToggle}
+      className="fixed bottom-5 left-5 z-30 w-12 h-12 rounded-full bg-dark-charcoal border border-neon-teal flex items-center justify-center shadow-lg hover:bg-light-charcoal transition-colors hover:shadow-glow-teal"
+      onClick={handleToggle}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       aria-label={`${isEnabled ? 'Disable' : 'Enable'} audio`}
     >
       {isEnabled ? (

@@ -16,6 +16,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useKonami } from '@/hooks/use-konami';
 import { useAchievements } from '@/hooks/use-achievements';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
+import { useAudio } from '@/hooks/use-audio';
 import ProjectModal from '@/components/ProjectModal';
 import { gsap } from 'gsap';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
@@ -26,13 +27,13 @@ gsap.registerPlugin(ScrollToPlugin);
 const Home = () => {
   const [bootComplete, setBootComplete] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
-  const [audioEnabled, setAudioEnabled] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showWelcomeInfo, setShowWelcomeInfo] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const { theme, toggleTheme } = useTheme();
   const { showEasterEgg, easterEggUnlocked } = useKonami();
   const { currentAchievement, triggerAchievement } = useAchievements();
+  const { isEnabled: audioEnabled, toggleAudio, playSound } = useAudio();
   
   // Section refs for smooth scrolling
   const aboutRef = useRef<HTMLElement | null>(null);
@@ -82,13 +83,18 @@ const Home = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [triggerAchievement]);
   
-  // Set up refs after mount
+  // Set up refs after mount - only once after boot complete
   useEffect(() => {
     if (bootComplete) {
-      aboutRef.current = document.getElementById('about') as HTMLElement;
-      skillsRef.current = document.getElementById('skills') as HTMLElement;
-      projectsRef.current = document.getElementById('projects') as HTMLElement;
-      contactRef.current = document.getElementById('contact') as HTMLElement;
+      // Delay to ensure DOM is fully rendered
+      const timer = setTimeout(() => {
+        aboutRef.current = document.getElementById('about');
+        skillsRef.current = document.getElementById('skills');
+        projectsRef.current = document.getElementById('projects');
+        contactRef.current = document.getElementById('contact');
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
   }, [bootComplete]);
   
@@ -152,7 +158,7 @@ const Home = () => {
     {
       key: 'm',
       description: 'Toggle audio',
-      action: () => setAudioEnabled(!audioEnabled)
+      action: () => toggleAudio()
     }
   ];
   
@@ -215,7 +221,7 @@ const Home = () => {
           
           <AudioToggle 
             isEnabled={audioEnabled} 
-            onToggle={() => setAudioEnabled(!audioEnabled)} 
+            onToggle={toggleAudio} 
           />
           
           <AccessibilityControls />

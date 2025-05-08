@@ -65,10 +65,6 @@ Portfolio/
 
 Contributions are welcome! If you would like to add new features, fix bugs, or improve documentation, feel free to submit a pull request.
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
 ## Contact
 
 For any inquiries or collaboration opportunities, reach out to me:
